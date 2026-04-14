@@ -132,9 +132,20 @@ function runAnalysis(e) {
     let income = parseInt(document.querySelector('[name="income"]').value);
     let credit = parseInt(document.querySelector('[name="credit"]').value);
 
-    // 🔥 Improved AI Logic
-    let score = ((credit * 0.5) + (income/1000 * 0.3) + (age * 0.2)) / 10;
-    if (score > 100) score = 100;
+  // ✅ Normalization (balanced logic)
+let normCredit = credit / 850 * 100;
+let normIncome = income / 100000 * 100;
+let normAge = age / 100 * 100;
+
+// ✅ Weighted score
+let score = (normCredit * 0.5) + (normIncome * 0.3) + (normAge * 0.2);
+
+// Optional penalty
+if (credit < 500) score -= 20;
+
+// Limit score
+if (score > 100) score = 100;
+if (score < 0) score = 0;
 
     let status = score > 70 ? "Low Risk ✅" :
                  score > 40 ? "Medium Risk ⚠️" :
