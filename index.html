@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Risk Analysis | AI Model</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -73,11 +78,6 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: 0.3s ease;
-    }
-    .card button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(79,70,229,0.4);
     }
     .metrics {
       padding: 60px 8%;
@@ -85,7 +85,6 @@
       color: #111827;
       text-align: center;
     }
-    .metrics h2 { margin-bottom: 40px; }
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -95,101 +94,102 @@
       background: white;
       padding: 25px;
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    }
-    .metric-box h3 {
-      font-size: 28px;
-      color: #4f46e5;
-      margin-bottom: 10px;
     }
     footer {
       text-align: center;
       padding: 20px;
       background: #0f172a;
-      font-size: 14px;
       color: #94a3b8;
     }
   </style>
 </head>
+
 <body>
 
 <header>
   <h1>Smart Risk AI</h1>
-  <nav>
-    <a href="#">Home</a>
-    <a href="#">Model</a>
-    <a href="#">Metrics</a>
-    <a href="#">Contact</a>
-  </nav>
 </header>
 
 <section class="hero">
   <div class="hero-text">
     <h2>AI Powered Risk Assessment Model</h2>
-    <p>
-      This system predicts financial risk using machine learning algorithms.
-      The model evaluates multiple parameters and generates intelligent risk
-      scoring with optimized accuracy and fairness evaluation.
-    </p>
-    <p><strong>Model Type:</strong> Logistic Regression + AI Enhancement</p>
-    <p><strong>Training Accuracy:</strong> 92.4%</p>
-    <p><strong>Validation Accuracy:</strong> 89.7%</p>
+    <p>This system predicts financial risk using machine learning algorithms.</p>
   </div>
 
   <div class="card">
     <h3>Analyze Risk</h3>
-    <form action="PASTE_YOUR_GOOGLE_FORM_ACTION_URL_HERE" method="POST" target="_blank">
-      <input type="text" name="entry.1111111111" placeholder="Full Name" required>
-      <input type="number" name="entry.2222222222" placeholder="Age" required>
-      <input type="number" name="entry.3333333333" placeholder="Monthly Income" required>
-      <input type="number" name="entry.4444444444" placeholder="Credit Score" required>
+
+    <!-- ✅ FIXED FORM -->
+    <form onsubmit="runAnalysis(event)">
+      <input type="text" name="name" placeholder="Full Name" required>
+      <input type="number" name="age" placeholder="Age" required>
+      <input type="number" name="income" placeholder="Monthly Income" required>
+      <input type="number" name="credit" placeholder="Credit Score" required>
       <button type="submit">Run AI Analysis</button>
     </form>
-  </div>
-</section>
 
-<section class="metrics">
-  <h2>Model Performance Metrics</h2>
-  <div class="metric-grid">
-    <div class="metric-box">
-      <h3>92%</h3>
-      <p>Accuracy</p>
-    </div>
-    <div class="metric-box">
-      <h3>0.89</h3>
-      <p>Precision</p>
-    </div>
-    <div class="metric-box">
-      <h3>0.87</h3>
-      <p>Recall</p>
-    </div>
-    <div class="metric-box">
-      <h3>0.88</h3>
-      <p>F1 Score</p>
-    </div>
+    <!-- ✅ RESULT -->
+    <div id="result" style="margin-top:15px; font-weight:600;"></div>
+
+    <!-- ✅ CHART -->
+    <canvas id="riskChart" style="margin-top:20px;"></canvas>
+
   </div>
 </section>
 
 <footer>
-  © 2026 Smart Risk Analysis System | AI & Data Analytics Project
+  © 2026 Smart Risk Analysis System
 </footer>
-  </footer>
 
-<!-- Google Form Section -->
-<section style="text-align:center; padding: 40px;">
-  <h2>Submit Model Accuracy Data</h2>
-  <a href="https://docs.google.com/forms/d/e/1FAIpQLSfZbFE1UU8cftxnZjKYaVA2nyTYgaZDgmLJIBfarL-E1ros_g/viewform?usp=publish-editor"
-     target="_blank"
-     style="background:#4CAF50; padding:15px 30px; color:white; text-decoration:none; border-radius:8px; font-size:18px;">
-     Open Submission Form
-  </a>
-</section>
+<!-- ✅ JAVASCRIPT -->
+<script>
+let chart;
 
+function runAnalysis(e) {
+  e.preventDefault();
 
-</body>
-</html>
-Added Google Form section
+  let name = document.querySelector('input[name="name"]').value;
+  let age = parseInt(document.querySelector('input[name="age"]').value);
+  let income = parseInt(document.querySelector('input[name="income"]').value);
+  let credit = parseInt(document.querySelector('input[name="credit"]').value);
 
+  let score = (credit / 10) + (income / 1000) + (age * 0.5);
+  if (score > 100) score = 100;
+
+  let status = "";
+  if (score > 70) status = "Low Risk ✅";
+  else if (score > 40) status = "Medium Risk ⚠️";
+  else status = "High Risk ❌";
+
+  document.getElementById("result").innerHTML =
+    `<b>${name}</b><br>
+     Risk Score: <b>${score.toFixed(1)}%</b><br>
+     Status: <b>${status}</b>`;
+
+  drawChart(score);
+}
+
+function drawChart(score) {
+  const ctx = document.getElementById('riskChart');
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Risk Score', 'Remaining'],
+      datasets: [{
+        data: [score, 100 - score],
+        backgroundColor: ['#4f46e5', '#e5e7eb']
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+</script>
 
 </body>
 </html>
